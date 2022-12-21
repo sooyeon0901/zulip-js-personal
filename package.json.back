@@ -9,13 +9,9 @@
   "dependencies": {
     "@babel/runtime": "^7.12.5",
     "browser-build": "^0.5.5",
-    "buffer": "^6.0.3",
-    "fs": "^0.0.1-security",
     "ini": "^1.3.7",
     "isomorphic-fetch": "^3.0.0",
-    "isomorphic-form-data": "2.0.0",
-    "process": "^0.11.10",
-    "stream-browserify": "^3.0.0"
+    "isomorphic-form-data": "2.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.10",
@@ -52,8 +48,5 @@
   "bugs": {
     "url": "https://github.com/zulip/zulip-js/issues"
   },
-  "homepage": "https://github.com/zulip/zulip-js#readme",
-  "browser": {
-    "fs": false
-  }
+  "homepage": "https://github.com/zulip/zulip-js#readme"
 }

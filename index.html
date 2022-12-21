@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Zulip Example</title>
+<script src="./dist/main.js"></script>
+<script type="text/javascript">  
+    window.onload = function() {
+    common.get_streams();
+  }
+  
+</script> 
+</head>
+<body>
+  <p>Python gRPC Stream Server and Web-GRPC</p>
+  <p>서버에서 1초 마다 일시를 전송</p><br/>
+  <input id="idTimer" type="text" readonly style="width:400px;height:20px;font-size:26px;"/><br/><br/>
+  <textarea id="idTx" type="text" readonly style="width:400px;height:400px;font-size:11px;"></textarea><br/>
+  <div id = "tagArea">
+  </div>  
+  <input type="button" value="데이터 가져오기" onclick="common.get_streams();">  
+</body>
+</html>
