@@ -18,7 +18,17 @@ function streams(config) {
     },
     subscriptions: {
       retrieve: (params) => {
+        // eslint-disable-next-line no-unused-vars
+        const param = { ...params };
         const url = `${config.apiURL}/users/me/subscriptions`;
+        return api(url, config, 'GET', params);
+      },
+    },
+    subscriptionsUsers: {
+      retrieve: (params) => {
+        // eslint-disable-next-line no-unused-vars
+        const param = { ...params };
+        const url = `${config.apiURL}/users/${param.user_id}/subscriptions/${param.stream_id}`;
         return api(url, config, 'GET', params);
       },
     },

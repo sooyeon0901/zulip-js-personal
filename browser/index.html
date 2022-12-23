@@ -5,18 +5,19 @@
 <title>Zulip Example</title>
 <script src="./dist/zulip.cherry.js"></script>
 <script type="text/javascript"> 
-    let cZulip
-    // window onload 시에 CZulip 객체 생성
-    window.onload = function() {
-      cZulip = new cw.CZulip("zulip@cherrycorp.io",
-      "YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT",
-      "https://ai.e4net.net");
+  let cZulip
+  // window onload 시에 CZulip 객체 생성
+  window.onload = function() {
+    cZulip = new cw.CZulip("zulip@cherrycorp.io",
+    "YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT",
+    "https://ai.e4net.net");
   }
   function get_stream_data() {
     const stream = cZulip.getStreams();
     stream.then( (data) => {
-      const j = JSON.stringify(data,null,2)
+      const j = JSON.stringify(data,null,2) //2 == stream ID 
       streambox.value = j;
+      console.log("data =", data); //Object
     });
   } 
 
@@ -32,13 +33,53 @@
   }
 
   function messageHandler(event) {
-    const j = JSON.stringify(event,null,2)
-    streambox.value += j + "\n"; 
+
+    if(event.type === 'message'){ // type = "heartbeat" 제거
+      const j = JSON.stringify(event,null,2)
+      streambox.value += j + "\n"; 
+      console.log("event =", event);
+      console.log("content =", event.message.content);
+      console.log("type =", event.type);
+      console.log("msg.id =", event.message.id);
+      console.log("msg.sender =", event.message.sender_email);
+  
+      // 채팅처럼 동적 효과
+      var div = document.createElement('div');
+      div.id = 'response';
+      div.innerHTML = event.message.content;
+      document.body.appendChild(div);
+    }
   }
   // 실시간 메시지
   function get_message_realtime() {
-    streambox.value=''
+    streambox.value='';
     cZulip.callOnEachMessage(messageHandler);
+  }
+
+  // 메시지 보내기 - 랜더링 사용
+  function send_message(){
+    const msg = msgbox.value;
+    msgbox.value = '';
+    cZulip.messageRender(msg)
+    /* 메시지 윗 영역에 뜨는 코드
+    .then((rmsg) => {
+      var v = msg;
+      if(!rmsg){ v = msg;} else if(rmsg.result === "success"){v = rmsg.rendered;}
+      rendered.innerHTML = v;
+    })
+    */
+    cZulip.sendStreamMsg("단체1-공개", "테스트토픽", msg).then((res) => {
+      console.log('result==', res)
+    })
+  }
+
+  // stream ID 
+  function get_stream_id(){
+    cZulip.getOneStreamId("단체1-공개").then((res) => {
+      console.log('result==', res);
+      const j = JSON.stringify(res,null,2)
+      streambox.value = j;  
+    });
   }
   
 </script> 
@@ -46,11 +87,14 @@
 <body>
   <p>Zulip Test</p>
   <textarea id="streambox" type="text" readonly style="width:800px;height:500px;font-size:14px;"></textarea><br/>
-  <div id = "tagArea">
-  </div>  
+  <div id = "tagArea"></div>  
   <input type="button" value="데이터 가져오기" onclick="get_stream_data();">  
   <input type="button" value="데이터 가져오기(Zulip)" onclick="get_stream_data_from_zulip();">  
   <input type="button" value="실시간대화" onclick="get_message_realtime();">  
+  <input type="button" value="스트림id" onclick="get_stream_id();">  
   <input type="button" value="지우기" onclick="{streambox.value=''}">  
+  <div id = "rendered"></div>  
+  <textarea id="msgbox" type="text" style="width:800px;height:100px;font-size:14px;"></textarea><br/>
+  <input type="button" value="보내기(채팅)" onclick="send_message();">  
 </body>
 </html>
