@@ -26,13 +26,17 @@ function users(config) {
         return api(url, config, 'GET');
       },
       subscriptions: {
-        add: (params) => {
+        add: (params) => { // 나의 새 스트림 생성(create) 및 기존 스트림 구독
           const url = `${config.apiURL}/users/me/subscriptions`;
           return api(url, config, 'POST', params);
         },
-        remove: (params) => {
+        remove: (params) => { // 나의 스트림 구독 취소
           const url = `${config.apiURL}/users/me/subscriptions`;
           return api(url, config, 'DELETE', params);
+        },
+        properties: (params) => { // 스트림의 설정 변경
+          const url = `${config.apiURL}/users/me/subscriptions/properties`;
+          return api(url, config, 'POST', params);
         },
       },
       alertWords: {
