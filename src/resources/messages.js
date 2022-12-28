@@ -1,3 +1,4 @@
+ /* eslint-disable */
 const api = require('../api');
 
 function messages(config) {
@@ -16,7 +17,7 @@ function messages(config) {
       const url = `${config.apiURL}/messages`;
       return api(url, config, 'POST', params);
     },
-    render: (initialParams) => {
+    render: (initialParams) => { // 메시지 랜더링
       const url = `${config.apiURL}/messages/render`;
       let params = { ...initialParams };
       if (typeof initialParams === 'string') {
@@ -52,6 +53,32 @@ function messages(config) {
         return api(flagsURL, config, 'POST', params);
       },
     },
+    file: {
+      upload: (params) => {
+        console.log('params==', params);
+        const url = `${config.apiURL}/user_uploads`;
+        console.log('url==', url);
+        return api(url, config, 'POST', params);
+      },
+    },
+    emoji: {
+      add: (params) => {
+        const url = `${config.apiURL}/messages/${params.message_id}/reactions`;
+        return api(url, config, 'POST', params);
+      },
+      remove: (params) => {
+        const url = `${config.apiURL}/messages/${params.message_id}/reactions`;
+        return api(url, config, 'DELETE', params);
+      },
+    },
+    narrow: {
+      match: (params) => {
+        const url = `${config.apiURL}/messages/matches_narrow`;
+        console.log('params==', params);
+        console.log('url==', url);
+        return api(url, config, 'GET', params);
+      },
+    },
     getById: (params) => {
       const url = `${config.apiURL}/messages/${params.message_id}`;
       return api(url, config, 'GET', params);
@@ -60,13 +87,28 @@ function messages(config) {
       const url = `${config.apiURL}/messages/${params.message_id}/history`;
       return api(url, config, 'GET', params);
     },
-    deleteReactionById: (params) => {
-      const url = `${config.apiURL}/messages/${params.message_id}/reactions`;
-      return api(url, config, 'DELETE', params);
-    },
     deleteById: (params) => {
       const url = `${config.apiURL}/messages/${params.message_id}`;
       return api(url, config, 'DELETE', params);
+    },
+    read: {
+      readAll: () => {
+        const url = `${config.apiURL}/mark_all_as_read`;
+        return api(url, config, 'POST');
+      },
+      streamAll: (params) => {
+        const url = `${config.apiURL}/mark_stream_as_read`;
+        return api(url, config, 'POST', params);
+      },
+      topicAll: (params) => {
+        const url = `${config.apiURL}/mark_topic_as_read`;
+        return api(url, config, 'POST', params);
+      },
+      receipts: (params) => {
+        const url = `${config.apiURL}/messages/${params.message_id}/read_receipts`;
+        console.log('url==', url);
+        return api(url, config, 'GET', params);
+      },
     },
   };
 }

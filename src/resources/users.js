@@ -1,3 +1,4 @@
+ /* eslint-disable */
 const api = require('../api');
 
 function users(config) {
