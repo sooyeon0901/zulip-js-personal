@@ -46,9 +46,17 @@ function users(config) {
         },
       },
       alertWords: {
-        retrieve: (params) => {
+        retrieve: (params) => { // 경고 단어 조회
           const url = `${config.apiURL}/users/me/alert_words`;
           return api(url, config, 'GET', params);
+        },
+        add: (params) => { // 경고 단어 추가
+          const url = `${config.apiURL}/users/me/alert_words`;
+          return api(url, config, 'POST', params);
+        },
+        delete: (params) => { // 경고 단어 제거
+          const url = `${config.apiURL}/users/me/alert_words`;
+          return api(url, config, 'DELETE', params);
         },
       },
       status: (params) => { // 내 상태 업데이트
@@ -84,6 +92,14 @@ function users(config) {
       allPresence: (params) => { // 조직 내 전체 접속중 조회
         const url = `${config.apiURL}/realm/presence`;
         return api(url, config, 'GET', params);
+      },
+      muted: (params) => { // 사용자 음소거
+        const url = `${config.apiURL}/users/me/muted_users/${params.muted_user_id}`;
+        return api(url, config, 'POST', params);
+      },
+      unmuted: (params) => { // 사용자 음소거 해제
+        const url = `${config.apiURL}/users/me/muted_users/${params.muted_user_id}`;
+        return api(url, config, 'DELETE', params);
       },
     },
     typing: (params) => { // 타이핑("입력중") 알림

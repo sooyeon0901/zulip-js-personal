@@ -280,11 +280,11 @@
     return z.users.group.updateMembers(params);
   }
 
-/* [ 그룹 유저 상태 조회 ] 
-*   @params : user_group_id, user_id
-*   @ex) getUserGroupMemberStatus(58, 23)
-*   @result : { result: 'success', msg: '', is_user_group_member: true }
-*/
+  /* [ 그룹 유저 상태 조회 ] 
+  *   @params : user_group_id, user_id
+  *   @ex) getUserGroupMemberStatus(58, 23)
+  *   @result : { result: 'success', msg: '', is_user_group_member: true }
+  */
   async getUserGroupMemberStatus(user_group_id, user_id){
     const z = await this.z;
     const params = {
@@ -295,19 +295,81 @@
     return z.users.group.status(params);
   }
 
-/* [ 그룹 id로 유저 목록 조회 ] 
-*   @params : user_group_id
-*   @ex) getUserGroupById(58)
-*   @result : { result: 'success', msg: '', members: [ 23, 31, 29, 27 ] }
-*/
-async getUserGroupById(user_group_id){
-  const z = await this.z;
-  const params = {
-    user_group_id: user_group_id,
-    // direct_member_only : direct_member_only 
+  /* [ 그룹 id로 유저 목록 조회 ] 
+  *   @params : user_group_id
+  *   @ex) getUserGroupById(58)
+  *   @result : { result: 'success', msg: '', members: [ 23, 31, 29, 27 ] }
+  */
+  async getUserGroupById(user_group_id){
+    const z = await this.z;
+    const params = {
+      user_group_id: user_group_id,
+      // direct_member_only : direct_member_only 
+    }
+    return z.users.group.getUserGroupById(params);
   }
-  return z.users.group.getUserGroupById(params);
-}
+
+  /* [ 사용자 음소거 ] 
+  *   @params : muted_user_id
+  *   @ex) muteAUser(23)
+  *   @ 음소거된 사용자가 보낸 모든 메시지 읽음 표시, 푸시 알림 지워짐, dm도 안 옴...
+  */
+  async muteAUser(muted_user_id){
+    const z = await this.z;
+    const params = {
+      muted_user_id: muted_user_id,
+    }
+    return z.users.other.muted(params);
+  }
+
+  /* [ 사용자 음소거 해제 ] 
+  *   @params : muted_user_id
+  *   @ex) unmuteAUser(23)
+  */
+  async unmuteAUser(muted_user_id){
+    const z = await this.z;
+    const params = {
+      muted_user_id: muted_user_id,
+    }
+    return z.users.other.unmuted(params);
+  }
+
+  /* [ 경고 단어 조회 ] 
+  *   @params : 
+  *   @ex) getAllAlertWords()
+  */
+  async getAllAlertWords(){
+    const z = await this.z;
+    return z.users.me.alertWords.retrieve();
+  }
+
+  /* [ 경고 단어 추가 ] 
+  *   @params : alert_words
+  *   @ex) addAlertWords(["foo", "bar"])
+  */
+  async addAlertWords(alertWords){
+    const z = await this.z;
+    const params = {
+      alert_words: alertWords,
+    }
+    return z.users.me.alertWords.add(params);
+  }
+
+  /* [ 경고 단어 제거 ] (TODO)
+  *   @params : alert_words
+  *   @ex) 
+  *   ! 이슈 : Argument "alert_words" is not valid JSON
+  */
+  async deleteAlertWords(){
+    const z = await this.z;
+    const params = {
+      alert_words: [
+        "bar"
+      ],
+    }
+    console.log('params==', params);
+    return z.users.me.alertWords.delete(params);
+  }
 
 }
 
@@ -341,7 +403,12 @@ function localTest() {
   // cz.deleteUserGroup(59).then((res) => {console.log(res);});
   // cz.updateUserGroupMembers(58).then((res) => {console.log(res);});
   // cz.getUserGroupMemberStatus(58, 23).then((res) => {console.log(res);});
-  cz.getUserGroupById(58).then((res) => {console.log(res);});
+  // cz.getUserGroupById(58).then((res) => {console.log(res);});
+  // cz.muteAUser(23).then((res) => {console.log(res);});
+  // cz.unmuteAUser(23).then((res) => {console.log(res);});
+  // cz.getAllAlertWords().then((res) => {console.log(res);});
+  // cz.addAlertWords(["foo", "bar"]).then((res) => {console.log(res);});
+  cz.deleteAlertWords().then((res) => {console.log(res);});
 }
 
 localTest();

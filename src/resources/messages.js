@@ -5,7 +5,7 @@ function messages(config) {
   const baseURL = `${config.apiURL}/messages`;
   const flagsURL = `${baseURL}/flags`;
   return {
-    retrieve: (initialParams) => {
+    retrieve: (initialParams) => { // 메시지 정보 조회
       const url = `${config.apiURL}/messages`;
       const params = { ...initialParams };
       if (params.narrow) {
@@ -13,7 +13,7 @@ function messages(config) {
       }
       return api(url, config, 'GET', params);
     },
-    send: (params) => {
+    send: (params) => { // 스트림/private에 메시지 보내기
       const url = `${config.apiURL}/messages`;
       return api(url, config, 'POST', params);
     },
@@ -27,12 +27,12 @@ function messages(config) {
       }
       return api(url, config, 'POST', params);
     },
-    update: (params) => {
+    update: (params) => { // 메시지 수정
       const url = `${config.apiURL}/messages/${params.message_id}`;
       return api(url, config, 'PATCH', params);
     },
     flags: {
-      add: (initialParams) => {
+      add: (initialParams) => { // 플래그 업데이트
         // params.flag can be one of 'read', 'starred', 'mentioned',
         // 'wildcard_mentioned', 'has_alert_word', 'historical',
         const params = { ...initialParams };
@@ -42,7 +42,7 @@ function messages(config) {
         }
         return api(flagsURL, config, 'POST', params);
       },
-      remove: (initialParams) => {
+      remove: (initialParams) => { // 플래그 삭제
         // params.flag can be one of 'read', 'starred', 'mentioned',
         // 'wildcard_mentioned', 'has_alert_word', 'historical',
         const params = { ...initialParams };
@@ -54,7 +54,7 @@ function messages(config) {
       },
     },
     file: {
-      upload: (params) => {
+      upload: (params) => { // 스트림에 파일 업로드
         console.log('params==', params);
         const url = `${config.apiURL}/user_uploads`;
         console.log('url==', url);
@@ -62,49 +62,49 @@ function messages(config) {
       },
     },
     emoji: {
-      add: (params) => {
+      add: (params) => { // 메시지에 이모지 추가
         const url = `${config.apiURL}/messages/${params.message_id}/reactions`;
         return api(url, config, 'POST', params);
       },
-      remove: (params) => {
+      remove: (params) => { // 메시지에 이모지 삭제
         const url = `${config.apiURL}/messages/${params.message_id}/reactions`;
         return api(url, config, 'DELETE', params);
       },
     },
     narrow: {
-      match: (params) => {
+      match: (params) => { // narrow 기준이 메시지와 일치하는지 확인
         const url = `${config.apiURL}/messages/matches_narrow`;
         console.log('params==', params);
         console.log('url==', url);
         return api(url, config, 'GET', params);
       },
     },
-    getById: (params) => {
+    getById: (params) => { // 단일 메시지 조회
       const url = `${config.apiURL}/messages/${params.message_id}`;
       return api(url, config, 'GET', params);
     },
-    getHistoryById: (params) => {
+    getHistoryById: (params) => { // 메시지 수정 내역 조회
       const url = `${config.apiURL}/messages/${params.message_id}/history`;
       return api(url, config, 'GET', params);
     },
-    deleteById: (params) => {
+    deleteById: (params) => { // 메시지 삭제
       const url = `${config.apiURL}/messages/${params.message_id}`;
       return api(url, config, 'DELETE', params);
     },
     read: {
-      readAll: () => {
+      readAll: () => { // 모든 글 읽음 상태로 전환
         const url = `${config.apiURL}/mark_all_as_read`;
         return api(url, config, 'POST');
       },
-      streamAll: (params) => {
+      streamAll: (params) => { // 스트림 글 읽음 상태로 전환
         const url = `${config.apiURL}/mark_stream_as_read`;
         return api(url, config, 'POST', params);
       },
-      topicAll: (params) => {
+      topicAll: (params) => { // 토픽 글 읽음 상태로 전환
         const url = `${config.apiURL}/mark_topic_as_read`;
         return api(url, config, 'POST', params);
       },
-      receipts: (params) => {
+      receipts: (params) => { // 메시지 읽음 확인
         const url = `${config.apiURL}/messages/${params.message_id}/read_receipts`;
         console.log('url==', url);
         return api(url, config, 'GET', params);

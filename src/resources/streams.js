@@ -57,7 +57,7 @@ function streams(config) {
         return api(url, config, 'POST', params);
       },
     },
-    deleteById: (params) => { // 해당 스트림 삭제
+    deleteById: (params) => { // 해당 스트림 삭제(아카이브)
       const url = `${config.apiURL}/streams/${params.stream_id}`;
       return api(url, config, 'DELETE', params);
     },
