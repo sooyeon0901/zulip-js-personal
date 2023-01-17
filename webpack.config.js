@@ -2,7 +2,7 @@ const path = require("path");
 // eslint-disable-next-line import/no-extraneous-dependencies
 const webpack = require("webpack")  // !!! 추가
 
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0   // 추가 TLS 무시
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0   // 추가 TLS 무시
 module.exports = 
 {
   mode: "development",
@@ -25,7 +25,9 @@ module.exports =
     extensions: ['.js', '.json', '.jsx', '.css','.ts'],
     fallback: {
       "stream": require.resolve("stream-browserify"),
-      "buffer": require.resolve("buffer")
+      "buffer": require.resolve("buffer"),
+      // eslint-disable-next-line spaced-comment
+      //"https": false // 0104 ssl 에러 테스트 -> 효과없어서 주석처리
   }    
   },
   // 아래 추가!!!!

@@ -28,6 +28,7 @@ function streams(config) {
         return api(url, config, 'GET', params);
       },
       update: (params) => { // 스트림 업데이트
+        console.log('api js2 param==', param);
         const param = { ...params };
         const url = `${config.apiURL}/streams/${param.stream_id}`;
         return api(url, config, 'PATCH', params);

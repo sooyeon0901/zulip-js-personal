@@ -13,7 +13,8 @@ function messages(config) {
       }
       return api(url, config, 'GET', params);
     },
-    send: (params) => { // 스트림/private에 메시지 보내기
+    send: async (params) => { // 스트림/private에 메시지 보내기
+      console.log('params==', params);
       const url = `${config.apiURL}/messages`;
       return api(url, config, 'POST', params);
     },
@@ -28,7 +29,9 @@ function messages(config) {
       return api(url, config, 'POST', params);
     },
     update: (params) => { // 메시지 수정
+      console.log('메시지수정params==', params);
       const url = `${config.apiURL}/messages/${params.message_id}`;
+      console.log('메시지수정url==', url);
       return api(url, config, 'PATCH', params);
     },
     flags: {
@@ -55,9 +58,7 @@ function messages(config) {
     },
     file: {
       upload: (params) => { // 스트림에 파일 업로드
-        console.log('params==', params);
         const url = `${config.apiURL}/user_uploads`;
-        console.log('url==', url);
         return api(url, config, 'POST', params);
       },
     },

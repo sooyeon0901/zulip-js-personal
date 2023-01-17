@@ -3,24 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <title>Zulip Example</title>
+<!-- 파일업로드  -->
+<!-- https://7942yongdae.tistory.com/186 -->
 <script src="./dist/zulip.cherry.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script type="text/javascript"> 
-  let cZulip
-  // window onload 시에 CZulip 객체 생성
-  window.onload = function() {
-    cZulip = new cw.CZulip("zulip@cherrycorp.io",
-    "YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT",
-    "https://ai.e4net.net");
-    get_talk();
+    let cZulip
+    // window onload 시에 CZulip 객체 생성
+    window.onload = function() {
+      cZulip = new cw.CZulip("zulip@cherrycorp.io",
+      "YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT",
+      "https://ai.e4net.net");
   }
-  // 전체 스트림 조회
   function get_stream_data() {
     const stream = cZulip.getStreams();
     stream.then( (data) => {
       const j = JSON.stringify(data,null,2)
-      console.log('data==', data);
       streambox.value = j;
+    });
+  } 
+
+  // Zulip 객체 바로 사용하기
+  function get_stream_data_from_zulip() {
+    const z = cZulip.getZulip();
+    z.then((zulip) => {
+       zulip.streams.subscriptions.retrieve().then((data) =>{
+        const j = JSON.stringify(data,null,2)
+        streambox.value = j;  
+      });
     });
   }
 
@@ -33,7 +43,6 @@
     streambox.value=''
     cZulip.callOnEachMessage(messageHandler);
   }
-
 
   // 메시지 보내기
   //{result: 'success', msg: '', rendered: '<p>meee</p>'}
@@ -54,57 +63,13 @@
        console.log(res);
       });    
   }  
-
-  // "글 가져오기" 클릭시 해당 스트림 내용 조회
-  function get_talk(){
-    const stream_name = document.getElementById("stream_name").value;
-    const div = document.getElementById("row");
-    const img = document.getElementById("img");
-    //console.log('img.src==', img.src);
-    
-    const talk = cZulip.getMsg(stream_name);
-    talk.then((res) => {
-      const j = JSON.stringify(res,null,2)
-      console.log('getMsg data==', res.messages);
-
-      res.messages.forEach((r) => {
-        console.log(r.content);
-        div.innerHTML += `작성자 : ` + r.sender_full_name +`, 내용 : ` + r.content + `<br/>`;
-        // url은 잘 불러와 지지만 개개인으로 이미지 할당이 안됨 (TODO)
-        //img.src = r.avatar_url;
-        //console.log('r.avatar_url==',r.avatar_url);
-      });
-    })
-  }
-
-  function send_talk(){
-    // 스트림에 메시지 전송
-    const stream_name = document.getElementById("stream_name").value;
-    const msg = document.getElementById("msg").value;
-    
-    const sendMsg = cZulip.sendStreamMsg(stream_name, "event stream", msg);
-    sendMsg.then((res) => {
-      const j = JSON.stringify(res,null,2);
-      console.log('send_talk data==', res);
-      
-    })
-
-    // 해당 글 가져오기
-    location.reload();
-  }
-
-  function get_send_talk(){
-    // 보낸 글만 가져오기
-    // 리프레시?
-  }
-
 </script> 
 </head>
 <body>
   <p>Zulip Test</p>
-  <textarea id="streambox" type="text" readonly style="width:800px;height:200px;font-size:14px;"></textarea><br/>
+  <textarea id="streambox" type="text" readonly style="width:800px;height:400px;font-size:14px;"></textarea><br/>
   <input type="button" value="데이터 가져오기" onclick="get_stream_data();">  
-  <!-- <input type="button" value="데이터 가져오기(Zulip)" onclick="get_stream_data_from_zulip();">   -->
+  <input type="button" value="데이터 가져오기(Zulip)" onclick="get_stream_data_from_zulip();">  
   <input type="button" value="실시간대화" onclick="get_message_realtime();">  
   <input type="button" value="지우기" onclick="{streambox.value=''}">  
   <div id = "rendered"></div>  
@@ -119,34 +84,6 @@
     style="display: none"
     accept="image/*"
   />
-  <input type="text" id="stream_name" value="신년모임"><button id="btn-get-talk" onclick="get_talk();">get talk</button>
-  <!-- <textarea id="talkbox" type="text" readonly style="width:800px;height:200px;font-size:14px;"></textarea><br/> -->
-  <div class="container">
-    <div class="row" id="row">
-      <!-- <img id="img" src="simple-code"/> -->
-    </div>
-  </div>
-  <input type="text" id="msg" value="test msg"><button id="btn-send-talk" onclick="send_talk();">send talk</button>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   <script>
     const inputFileUpload = document.querySelector("#upload-file");
     const zulip_server = "https://ai.e4net.net";

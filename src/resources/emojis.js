@@ -6,6 +6,10 @@ function emojis(config) {
       const url = `${config.apiURL}/realm/emoji`;
       return api(url, config, 'GET', params);
     },
+    set: (params) => {
+      const url = `${config.apiURL}/realm/emoji/${params.emoji_name}`;
+      return api(url, config, 'POST', params);
+    },
   };
 }
 

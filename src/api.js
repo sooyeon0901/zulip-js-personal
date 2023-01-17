@@ -1,4 +1,6 @@
+ /* eslint-disable */
 const helper = require('./helper');
+// const https = require('https');  0104 ssl 에러 테스트 -> 효과없어서 주석처리
 
 async function api(baseUrl, config, method, params) {
   const url = new URL(baseUrl);
@@ -7,6 +9,9 @@ async function api(baseUrl, config, method, params) {
   );
   const authHeader = `Basic ${auth}`;
   const options = { method, headers: { Authorization: authHeader } };
+  // const httpsAgent = new https.Agent({
+  //   rejectUnauthorized: false,
+  // });
   if (method === 'POST') {
     options.body = new helper.FormData();
     Object.keys(params).forEach((key) => {
@@ -15,12 +20,14 @@ async function api(baseUrl, config, method, params) {
         data = JSON.stringify(data);
       }
       options.body.append(key, data);
+      // options.agent = httpsAgent;
     });
   } else if (params) {
     Object.entries(params).forEach(([key, value]) => {
       url.searchParams.append(key, value);
     });
   }
+
   const response = await helper.fetch(url.href, options);
   try {
     return response.json();

@@ -4,7 +4,7 @@ const { async } = require('@babel/runtime/helpers/regeneratorRuntime');
 const zulip = require('../lib');
 
 /*
-* 테스트 미완료 : uploadFile(), getMatchNarrow(), deleteAlertWords()
+* 테스트 미완료 : getMatchNarrow(), deleteAlertWords(), uploadFile(해결)
 */
 class CZulip {
   constructor(email, apiKey, uri) {
@@ -50,7 +50,10 @@ class CZulip {
   */
   async getStreamById(stream_id){
     const z = await this.z;
-    return z.streams.getStreamById(stream_id);
+    const param = {
+      stream_id: stream_id
+    }
+    return z.streams.getStreamById(param);
   }
   
   /* [ 스트림명으로 해당 스트림의 ID 조회 ]
@@ -62,7 +65,7 @@ class CZulip {
     return z.streams.getStreamId(stream_name);
   }
 
-  /* [ 유저의 스트림 구독 상태 조회 ]
+  /* [ 유저의 스트림 구독 상태 조회 ] (관리자)
   *   @params : user_id, stream_id
   *   @ex) getUsersStreams(22, 42)
   *   @result : { is_subscribed: true }
@@ -89,7 +92,7 @@ class CZulip {
     return z.streams.subscriptions.allSubscribers(params);
   }
 
-  /* [ 해당 스트림의 설정 변경 ]
+  /* [ 해당 스트림의 설정 변경 ] (관리자)
   *   @params : subscription_data[{ stream_id, property, value }]
   *   @ex) getAllSubscribers(39)
   */
@@ -110,12 +113,18 @@ class CZulip {
   *         - options : stream_post_policy, is_private ...
   *   @ex) updateStream(39) + 기타 파라미터 내부 설정
   */
-  async updateStream(stream_id){
+  async updateStream(param){
+    console.log('api js1 param==', param);
     const z = await this.z;
     const params = {
-      stream_id: stream_id,
-      stream_post_policy: 2,
-      is_private: true,
+      stream_id: param.stream_id,
+      description: param.description,
+      new_name: param.new_name,
+      is_private: param.is_private,
+      stream_post_policy: param.stream_post_policy,
+      message_retention_days: JSON.stringify(param.message_retention_days)
+      // history_public_to_subscribers: history_public_to_subscribers, // 디폴트 사용
+      // is_web_public // 웹 공개 스트림인지 여부
     }
     return z.streams.subscriptions.update(params);
   }
@@ -125,10 +134,15 @@ class CZulip {
   *             stream_name이 존재하지 않으면 새 스트림을 생성하고, 존재하는 스트림이 미구독 상태이면 구독함
   *   @ex) subscribeStream("연말모임")
   */
-  async subscribeStream(stream_name){
+  async subscribeStream(param){
     const z = await this.z;
     const params = {
-      subscriptions: JSON.stringify([{name: stream_name}]),
+      subscriptions: JSON.stringify([{name: param.stream_name, description: param.description}]),
+      stream_post_policy: param.stream_post_policy,
+      message_retention_days: JSON.stringify(param.message_retention_days) // str, int 두 개의 타입을 모두 받을 수 있기 때문에 stringify 처리해야 동작됨
+      // announce: "true", // true를 string으로 넘겨야 에러 안남, 어떤 효과인지 모르겠음. 디폴트 설정이 나을듯함
+      // is_web_public: "true", // 설정을 연결해서 처리해야 할 게 많음. 보류
+      // history_public_to_subscribers 옵션은 필요없을 거 같아서 테스트 안함
     };
     return z.users.me.subscriptions.add(params);
   }
@@ -173,13 +187,16 @@ class CZulip {
     return z.users.me.subscriptions.remove(params);
   }
 
-  /* [ 해당 스트림 삭제 ]
+  /* [ 해당 스트림 삭제 ] (관리자?)
   *   @params : { stream_id: 44 }
   *   @ex) deleteStream({"stream_id": 44})
   */
   async deleteStream(stream_id) {
     const z = await this.z;    
-    return z.streams.deleteById(stream_id);
+    const param = {
+      stream_id: stream_id
+    }; 
+    return z.streams.deleteById(param);
   }
 
   /* [ 해당 스트림에서 토픽 조회 ]
@@ -187,8 +204,11 @@ class CZulip {
   *   @ex) getStreamTopics({"stream_id": 39})
   */
   async getStreamTopics(stream_id){
-    const z = await this.z;    
-    return z.streams.topics.retrieve(stream_id)
+    const z = await this.z;   
+    const param = {
+      stream_id: stream_id
+    }; 
+    return z.streams.topics.retrieve(param);
   }
 
   /* [ 토픽 뮤트/언뮤트 ]
@@ -268,7 +288,7 @@ class CZulip {
         subject: topic, 
         content: msg
     };
-    await z.messages.send(params);
+    return z.messages.send(params);
   }
 
   /* [ private 메시지 보내기 ]
@@ -282,22 +302,16 @@ class CZulip {
       type: 'private',
       content: msg
     };
-    return await z.messages.send(params);
+    return z.messages.send(params);
   }
 
-  /* [ 스트림에 파일 업로드 ] (TODO) 다시 테스트. 
+  /* [ 스트림에 파일 업로드 ] 브라우저에서만 가능
   *   @params : 
   *   @ex) 
   */
-  async uploadFile(stream_name, topic){
-    const z = await this.z;
-    const params = {
-      type: "stream",
-      to: stream_name,
-      topic: topic,
-      content: "[heart.gif](/user_uploads/8/eb/-DH9bu0uRFyHVFgY54yzthYM/heart.gif)"
-    };
-    return z.messages.file.upload(params);
+  async uploadFile(){
+    // const z = await this.z;
+    // return fs;
   }
 
   /* [ 메시지 정보 조회 ]
@@ -306,38 +320,45 @@ class CZulip {
   *             num_before, num_after, ...
   *   @ex) getMsg()
   */
-  async getMsg(){
+  async getMsg(narrowParams, otherParams){
+    console.log("narrowParams==", narrowParams);
+    console.log("otherParams==", otherParams);
     const z = await this.z;
     const params = {
-      anchor: "newest",
-        num_before: 3, // 엥커보다 작은 메시지의 개수. ex) 1 == 1개, 3 == 3개 출력
-        num_after: 0, // 엥커보다 큰 메시지의 개수. 다른 수로 테스트해도 결과값이 다르지 않음.
-        narrow: [
-            // {operator: "sender", operand: "zulip@cherrycorp.io"}, // 작성자 한정
-            // {operator: "stream", operand: "뮤트테스트"}, // 스트림 한정
-            {operator: "streams", operand: "public"}, // 공개 스트림 한정
-        ],
-        client_gravatar: false, // false로 지정하면 avatar_url이 null이 아닌 값이 들어가 있음. 그 값은 작성자의 아바타, 프로필이미지.
-        apply_markdown: false, // false인 경우, 마크다운 형식으로 출력. true인 경우 랜더링된 html형식.
+      anchor: otherParams.anchor,
+        num_before: otherParams.num_before, // 엥커보다 작은 메시지의 개수. ex) 1 == 1개, 3 == 3개 출력
+        num_after: otherParams.num_after, // 엥커보다 큰 메시지의 개수. 다른 수로 테스트해도 결과값이 다르지 않음.
+        narrow: narrowParams,
+        // narrow: [
+        //     // {operator: "sender", operand: "zulip@cherrycorp.io"}, // 작성자 한정
+        //     {operator: "stream", operand: stream_name}, // 스트림 한정
+        //     {operator: "streams", operand: "public"}, // 공개 스트림 한정
+        // ],
+        client_gravatar: otherParams.client_gravatar, // false로 지정하면 avatar_url이 null이 아닌 값이 들어가 있음. 그 값은 작성자의 아바타, 프로필이미지.
+        apply_markdown: otherParams.apply_markdown, // false인 경우, 마크다운 형식으로 출력. true인 경우 랜더링된 html형식.
         // use_first_unread_anchor: true // first_unread 와 같이 사용. 
-      }
+    }
+    console.log("params==", params);
     return z.messages.retrieve(params);
   }
+
   /* [ 메시지 수정 ]
   *   일정 시간이 지나면 수정 불가능 
   *   @params : message_id
   *   @ex) editMsg(458)
+  *  다른 파라미터 옵션이 있지만 쥴립 client에서는 메시지 내용 수정만 제공하므로, 
+  *  다른 옵션들을 선별하는 코드를 추가하지 않음.
   */
-  async editMsg(message_id){
+  async editMsg(message_id, content){
     const z = await this.z;
     const params = {
-      message_id,
-      // content: "메시지의 스트림을 변경",
-      // topic: "토픽변경3", // 해당 메시지의 토픽이 변경/생성됨
-      // propagate_mode: "change_later", // 테스트 실패
-      // send_notification_to_old_thread: true, // 메시지가 이동됨을 이전 토픽에 알림
-      // send_notification_to_new_thread: true, // 메시지가 이동함을 현재 토픽에 알림
-      stream_id: 39 // 해당 메시지의 스트림 변경. content 와 동시에 사용 불가능
+      message_id: message_id,
+      content: content,
+      // topic: param.topic, // 해당 메시지의 토픽이 변경/생성됨
+      // propagate_mode: param.propagate_mode, // 테스트 실패
+      // send_notification_to_old_thread: param.send_notification_to_old_thread, // 메시지가 이동됨을 이전 토픽에 알림
+      // send_notification_to_new_thread: param.send_notification_to_new_thread, // 메시지가 이동함을 현재 토픽에 알림
+      // stream_id: param.stream_id // 해당 메시지의 스트림 변경. content 와 동시에 사용 불가능
     }
     return z.messages.update(params);
   }
@@ -355,6 +376,30 @@ class CZulip {
     //   message_id,
     // }
     return z.messages.deleteById(params)
+  }
+
+  /* [ 이모지 업로드 ]
+  *   @params : 
+  *   @ex) 
+  *   https://zulip.com/api/upload-custom-emoji
+  */
+   async setEmoji(){
+    const z = await this.z;
+    let emoji_name = "dog";
+    const params = {
+      emoji_name: emoji_name,
+    }
+    return z.emojis.set(params);
+  }
+
+  /* [ 이모지 조회 ]
+  *   @params : 
+  *   @ex) 
+  *   https://zulip.com/api/get-custom-profile-fields
+  */
+  async getEmoji(){
+    const z = await this.z;
+    return z.emojis.retrieve();
   }
 
   /* [ 메시지에 이모지 추가 ]
@@ -845,6 +890,7 @@ class CZulip {
   *   @ex) addAlertWords(["foo", "bar"])
   */
   async addAlertWords(alertWords){
+    console.log('test!!!');
     const z = await this.z;
     const params = {
       alert_words: alertWords,
@@ -857,10 +903,18 @@ class CZulip {
   *   @ex) 
   *   ! 이슈 : Argument "alert_words" is not valid JSON
   */
-  async deleteAlertWords(){
+  async deleteAlertWords(all_alert_words){
     const z = await this.z;
+    // const a = new CZulip();
+
+    // await a.getAllAlertWords().then((res) => {
+    //   // const all_alert_words =
+    //   console.log('삭제 안 파라미터 ', res);
+    // });
+    console.log('all_alert_words==', all_alert_words.alert_words[0]);
+   
     const params = {
-      alert_words: ["bar"],
+      alert_words: all_alert_words.alert_words[0],
     }
     console.log('params==', params);
     return z.users.me.alertWords.delete(params);
@@ -873,20 +927,40 @@ class CZulip {
 // eslint-disable-next-line no-unused-vars
 function localTest() {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
-  const cz = new CZulip("zulip@cherrycorp.io","YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT","https://ai.e4net.net")
+  // const cz = new CZulip("zulip@cherrycorp.io","YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT","https://ai.e4net.net")
+  const cz = new CZulip("suyeun1215@naver.com", "aR4WwdKS28O34SJsSOGNZQAGXeRlLfL0", "https://ai.e4net.net")
   
-  function handleEvent(event) {
-    console.log(event);
-  }
-  cz.callOnEachMessage(handleEvent);
+  // function handleEvent(event) {
+  //   console.log(event);
+  // }
+  // cz.callOnEachMessage(handleEvent);
   // sleep(100).then((v)=>{console.log(v)});
   // cz.getStreams().then((data) =>{console.log(data);});
-  // cz.getZulip().then((zulip) => {
+  // cz.getZulip().then((data) => {console.log(data);});
   // zulip.streams.subscriptions.retrieve().then((data) =>{console.log(data)});});
   // cz.getOneStreamId("단체1-공개").then((res) => {console.log(res);}); // 방 1개의 ID
   // cz.getAllStreams().then((res) => {console.log(res);}); // 전체 방 ID 
-  // cz.sendPrivateMsg(23, "날씨가 너무 추워요").then((res) => {console.log(res);}); // 개인메시지 보내기
-  // cz.subscribeStream("신년모임").then((res) => {console.log(res);}); // 새 스트림 생성 및 구독 
+  // cz.sendPrivateMsg(22, "날씨가 너무 추워요").then((res) => {console.log(res);}); // 개인메시지 보내기
+  
+  // let params = {
+  //   stream_name: "테스트생성9", 
+  //   description: "테스트 설명생성4", 
+  //   stream_post_policy: 1, 
+  //   message_retention_days: 30
+  // }
+  // cz.subscribeStream(params).then((res) => {console.log(res);}); // 새 스트림 생성 및 구독 
+
+  // let params = {
+  //   stream_id: 17,
+  //   description: "제너럴 수정테슽츠",
+  //   new_name: "general23",
+  //   is_private: false, //false ==공개방 설정
+  //   stream_post_policy: 1,
+  //   message_retention_days: 365
+  // }
+  // cz.updateStream(params).then((res) => {console.log(res);});
+  
+  
   // cz.subscribeAnotherUserStream(22, "군고구마방-공개").then((res) => {console.log(res);}); // 새 스트림 생성 및 구독 
   // cz.removeStreamSubscription("군고구마방-공개").then((res) => {console.log(res);})
   // cz.removeAnotherUserSubscription(22, "군고구마방-공개").then((res) => {console.log(res);});
@@ -897,20 +971,29 @@ function localTest() {
   // testArr.push({"stream_id": 39, "property": "color", "value": "#FFC0CB"});
   // testArr.push({"stream_id": 39, "property": "pin_to_top", "value": true});
   // cz.setSubscriptionSetting().then((res) => {console.log(res);});
-  // cz.getStreamById({"stream_id": 39}).then((res) => {console.log(res);});
-  // cz.updateStream(47).then((res) => {console.log(res);});
-  // cz.deleteStream({"stream_id": 44}).then((res) => {console.log(res);});
-  // cz.getStreamTopics({"stream_id": 39}).then((res) => {console.log(res);});
+  // cz.getStreamById(39).then((res) => {console.log(res);});
+  // cz.deleteStream(220).then((res) => {console.log(res);});
+  // cz.getStreamTopics(39).then((res) => {console.log(res);});
   // cz.muteUnmuteTopic("뮤트테스트", "뮤트토픽", "add").then((res) => {console.log(res);});
   // cz.deleteTopic(39, "삭제").then((res) => {console.log(res);});
   // cz.setDefaultStream(39).then((res) => {console.log(res);});
   // cz.removeDefaultStream(39).then((res) => {console.log(res);});
 
-  // cz.sendStreamMsg("신년모임", "stream events", "읽음테스트23332").then((res) => {console.log(res);});
+  // cz.sendStreamMsg("신년모임", "stream events", "wssssgwgwgw").then((res) => {console.log(res);});
   // cz.sendPrivateMsg(23, "안녕?????하세요").then((res) => {console.log(res);});
-  // cz.uploadFile("뮤트테스트", "뮤트토픽").then((res) => {console.log(res);});
-  // cz.getMsg().then((res) => {console.log(res);});
-  // cz.editMsg(460).then((res) => {console.log(res);});
+  // cz.uploadFile().then((res) => {console.log(res);});
+  // cz.getMsg("단체1-공개").then((res) => {console.log(res);});
+  // cz.editMsg({message_id:1456, content:"수정1", topic:null, propagate_mode:null, 
+  // send_notification_to_old_thread:null, send_notification_to_new_thread:null, stream_id:null}).then((res) => {console.log(res);});
+
+  // let message_id;
+  // let content;
+  // let topic;
+  // let propagate_mode;
+  // let send_notification_to_old_thread;
+  // let send_notification_to_new_thread;
+  // let stream_id;
+
   // cz.deleteMsg(457).then((res) => {console.log(res);});
   // cz.addEmojiReaction(470, "octopus").then((res) => {console.log(res);});
   // cz.removeEmojiReaction(470, "octopus").then((res) => {console.log(res);});
@@ -925,8 +1008,8 @@ function localTest() {
   // cz.getMsgReceipts(479).then((res) => {console.log(res);});
 
   
-  cz.getAllUsers().then((res) => {console.log(res);});
-  // cz.getOwnUser().then((res) => {console.log(res);});
+  // cz.getAllUsers().then((res) => {console.log(res);});
+  cz.getOwnUser().then((res) => {console.log(res);});
   // cz.getAUserById(23).then((res) => {console.log(res);});
   // cz.getAUserByEmail("test002@cherrycorp.io").then((res) => {console.log(res);});
   // cz.updateUser(29).then((res) => {console.log(res);});
@@ -950,8 +1033,19 @@ function localTest() {
   // cz.muteAUser(23).then((res) => {console.log(res);});
   // cz.unmuteAUser(23).then((res) => {console.log(res);});
   // cz.getAllAlertWords().then((res) => {console.log(res);});
-  // cz.addAlertWords(["foo", "bar"]).then((res) => {console.log(res);});
-  // cz.deleteAlertWords().then((res) => {console.log(res);});
+  // cz.addAlertWords(["멍청이5"]).then((res) => {console.log(res);});
+
+  // cz.deleteAlertWords(["바보"]).then((res) => {console.log(res);});
+  // cz.deleteAlertWords({
+  //   "alert_words": [
+  //   'foo',     'bar',
+  //   '멍청이',  '바보',
+  //   '멍청이2', '멍청이3',
+  //   '멍청이4', '멍청이5'
+  // ]
+  // }).then((res) => {console.log(res);});
+  // cz.getEmoji().then((res) => {console.log(res);});
+  // cz.getPrivMsg().then((res) => {console.log(res);});
 }
 
 localTest();
