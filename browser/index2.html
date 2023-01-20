@@ -58,7 +58,7 @@
       }
       rendered.innerHTML = v;
     });
-    cZulip.sendStreamMsg("단체1-공개","테스트토픽",msg)
+    cZulip.c("단체1-공개","테스트토픽",msg)
      .then((res)=>{
        console.log(res);
       });    
@@ -66,7 +66,7 @@
 </script> 
 </head>
 <body>
-  <p>Zulip Test</p>
+  <p>Zulip Test2222</p>
   <textarea id="streambox" type="text" readonly style="width:800px;height:400px;font-size:14px;"></textarea><br/>
   <input type="button" value="데이터 가져오기" onclick="get_stream_data();">  
   <input type="button" value="데이터 가져오기(Zulip)" onclick="get_stream_data_from_zulip();">  
@@ -77,7 +77,7 @@
   <input type="button" value="메시지 보내기" onclick="send_message();">    
   <br/>
   <!-- 여기서 부터 파일 업로드 -->
-  <button id="btn-file-upload">파일 업로드</button>
+  <button id="btn-file-upload">파일 업로드333</button>
   <input
     type="file"
     id="upload-file"
