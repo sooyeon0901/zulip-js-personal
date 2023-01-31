@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Zulip Example</title>
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous"> -->
+<link rel="stylesheet" href="./dist/dist/css/vendors-node_modules_katex_dist_katex_css.css">
+<link rel="stylesheet" href="./dist/dist/css/markdown.css">
+
+
+<script src="./dist/dist/zulip.markdown.js"></script>
+<script type="text/javascript"> 
+
+  window.onload = function() {
+  }
+  function get_stream_data() {
+  } 
+
+  // Zulip 객체 바로 사용하기
+  function get_stream_data_from_zulip() {
+  }
+
+  function messageHandler(event) {
+    const j = JSON.stringify(event,null,2)
+    streambox.value += j + "\n"; 
+  }
+  // 실시간 메시지
+  function get_message_realtime() {
+  }
+
+  // 메시지 보내기
+  function send_message() {
+    //console.log(msgbox.value);
+    const raw_content = msgbox.value;
+    const content = mk.parse2(raw_content);
+    //console.log(content);
+    rendered.innerHTML = content;
+  }  
+</script> 
+</head>
+<body  style="overflow-x: auto;overflow-y: auto;">
+  <p>Zulip Test</p>
+  <textarea id="streambox" type="text" readonly style="width:800px;height:200px;font-size:14px;"></textarea><br/>
+  <input type="button" value="데이터 가져오기" onclick="get_stream_data();">  
+  <input type="button" value="데이터 가져오기(Zulip)" onclick="get_stream_data_from_zulip();">  
+  <input type="button" value="실시간대화" onclick="get_message_realtime();">  
+  <input type="button" value="지우기" onclick="{streambox.value=''}">  
+  <div>
+    <div class="rendered_markdown" style>
+      <div id = "rendered"></div>  
+    </div>
+  </div>
+  <textarea id="msgbox" type="text" style="width:800px;height:100px;font-size:14px;"></textarea><br/>
+  <input type="button" value="메시지 보내기" onclick="send_message();">    
+</body>
+</html>

@@ -20,22 +20,22 @@ class CZulip {
   *     TODO 및 미완료
   * -------------------- */
   /* [ narrow 기준이 메시지와 일치하는지 확인 ] (TODO)
-  *   @params : message_id
-  *   @ex) getMatchNarrow([469, 470], "신년모임")
+  *   @params : message_id, operand
+  *   @ex) cz.getMatchNarrow([1835, 1837],"할로할로23").then((res) => {console.log(res);});
   */
-  async getMatchNarrow(message_id){
+  async getMatchNarrow(message_id, operand){
     const z = await this.z;
     const params = {
-      msg_ids: message_id, // List [469, 470]. 이슈 : Argument "msg_ids" is not valid JSON.
-      narrow: [{operator: "streams", operand: "신년모임"}],
+      msg_ids: message_id, // List [1835, 1837] // 이슈 : Argument "msg_ids" is not valid JSON.
+      narrow: [{operator: "streams", operand: operand}],
     }
     console.log('params==', params);
     return z.messages.narrow.match(params);
   }
 
-  /* [ 이모지 업로드 ] (TODO) 테스트 미완료
+  /* [ 이모지 업로드 ] (테스트 미완료)
   *   @params : 
-  *   @ex) 
+  *   @ex)  DOCS의 Server & Organizations part에 있으므로 테스트 안함
   *   https://zulip.com/api/upload-custom-emoji
   */
   async setEmoji(emoji_name){
@@ -46,7 +46,7 @@ class CZulip {
     return z.emojis.set(params);
   }
   
-  /* [ 경고 단어 제거 ] (TODO)
+  /* [ 경고 단어 제거 ] (TODO) 안됨
   *   @params : alert_words
   *   @ex) 
   *   ! 이슈 : Argument "alert_words" is not valid JSON
@@ -469,11 +469,11 @@ class CZulip {
   *   @params : message_id
   *   @ex) getSingleMsg(470)
   */
-  async getSingleMsg(message_id){
+  async getSingleMsg(param){
     const z = await this.z;
     const params = {
-      message_id: message_id,
-      apply_markdown: false, // 읽기 편한 방식. raw Markdown-format
+      message_id: param.message_id,
+      apply_markdown: param.apply_markdown, // 읽기 편한 방식. raw Markdown-format
     }
     return z.messages.getById(params);
   }
@@ -659,6 +659,7 @@ class CZulip {
   *   administrator만 사용 가능한 기능
   */
   async createUser(param) {
+    console.log('param==', param);
     const z = await this.z;
     const params = {
       email: param.email,
@@ -1014,7 +1015,7 @@ function localTest() {
   // cz.addEmojiReaction(470, "octopus").then((res) => {console.log(res);});
   // cz.removeEmojiReaction(470, "octopus").then((res) => {console.log(res);});
   // cz.getSingleMsg(470).then((res) => {console.log(res);});
-  // cz.getMatchNarrow([469, 470], "신년모임").then((res) => {console.log(res);});
+  // cz.getMatchNarrow([1835, 1837],"할로할로23").then((res) => {console.log(res);});
   // cz.getEditHistory(471).then((res) => {console.log(res);});
   // cz.updateFlag([471, 472]).then((res) => {console.log(res);});
   // cz.removeFlag([471, 472]).then((res) => {console.log(res);});
@@ -1030,7 +1031,12 @@ function localTest() {
   // cz.getAUserByEmail("test002@cherrycorp.io").then((res) => {console.log(res);});
   // cz.updateUser(29).then((res) => {console.log(res);});
   // cz.updateMyStatus().then((res) => {console.log(res);});
-  // cz.createUser().then((res) => {console.log(res);});
+  let param = {
+    email : "suyeun5678@naver.com",
+    password: "e4net123",
+    full_name: "이미지 씨"
+  }
+  cz.createUser(param).then((res) => {console.log(res);});
   // cz.deactivateUser(32).then((res) => {console.log(res);});
   // cz.reactivateUser(32).then((res) => {console.log(res);});
   // cz.getTypingStatus().then((res) => {console.log(res);});
@@ -1057,7 +1063,7 @@ function localTest() {
   // cz.getAllAlertWords().then((res) => {console.log(res);});
   // cz.addAlertWords(["멍청이5"]).then((res) => {console.log(res);});
 
-  cz.deleteAlertWords().then((res) => {console.log(res);});
+  // cz.deleteAlertWords().then((res) => {console.log(res);});
   // cz.deleteAlertWords({
   //   "alert_words": [
   //   'foo',     'bar',
@@ -1070,7 +1076,7 @@ function localTest() {
   // cz.getPrivMsg().then((res) => {console.log(res);});
 }
 
-localTest();
+// localTest();
 
 module.exports = {
   // eslint-disable-next-line object-shorthand

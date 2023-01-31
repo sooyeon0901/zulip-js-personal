@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
 <title>Zulip Example</title>
+<META charset="UTF-8">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
+  
 <!-- 파일업로드  -->
 <!-- https://7942yongdae.tistory.com/186 -->
 <script src="./dist/zulip.cherry.js"></script>
@@ -11,8 +14,11 @@
     let cZulip
     // window onload 시에 CZulip 객체 생성
     window.onload = function() {
-      cZulip = new cw.CZulip("zulip@cherrycorp.io",
-      "YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT",
+      //cZulip = new cw.CZulip("zulip@cherrycorp.io",
+      //"YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT",
+      //"https://ai.e4net.net");
+      cZulip = new cw.CZulip("1000000000000002597@dev.cword.cherry",
+      "3wwYDZvJCHpehnhid4sJWOTVl7TaZe6p",
       "https://ai.e4net.net");
   }
   function get_stream_data() {
@@ -47,7 +53,10 @@
   // 메시지 보내기
   //{result: 'success', msg: '', rendered: '<p>meee</p>'}
   function send_message() {
+
     const msg = msgbox.value;
+    console.log(cZulip);
+    /*
     cZulip.messageRender(msg).then((rmsg)=>{
       var v = msg;
       if(!rmsg) {
@@ -58,26 +67,30 @@
       }
       rendered.innerHTML = v;
     });
-    cZulip.c("단체1-공개","테스트토픽",msg)
+    */
+    cZulip.sendMessage("단체1-공개","테스트토픽",msg)
      .then((res)=>{
        console.log(res);
-      });    
+       return;
+      });
+      return;
   }  
 </script> 
 </head>
 <body>
-  <p>Zulip Test2222</p>
+  <p>Zulip Test</p>
   <textarea id="streambox" type="text" readonly style="width:800px;height:400px;font-size:14px;"></textarea><br/>
-  <input type="button" value="데이터 가져오기" onclick="get_stream_data();">  
+  <input type="button" value="데이터 가져오기" onclick="get_stream_data()">  
   <input type="button" value="데이터 가져오기(Zulip)" onclick="get_stream_data_from_zulip();">  
   <input type="button" value="실시간대화" onclick="get_message_realtime();">  
   <input type="button" value="지우기" onclick="{streambox.value=''}">  
   <div id = "rendered"></div>  
   <textarea id="msgbox" type="text" style="width:800px;height:100px;font-size:14px;"></textarea><br/>
   <input type="button" value="메시지 보내기" onclick="send_message();">    
+  <img id="aaa" src="">
   <br/>
   <!-- 여기서 부터 파일 업로드 -->
-  <button id="btn-file-upload">파일 업로드333</button>
+  <button id="btn-file-upload">파일 업로드</button>
   <input
     type="file"
     id="upload-file"
@@ -111,7 +124,7 @@
             f_uri = response["data"]["uri"];
             file_name = f_uri.substr(f_uri.lastIndexOf('/') + 1);
           // [hau2.png](/user_uploads/8/26/LuOw0cbnp7IBHcgOr9bB5-7I/hau2.png) 
-            msgbox.value += "["+file_name+"](" + zulip_server +f_uri + ")";
+            msgbox.value += "["+file_name+"](" + zulip_server + "/" +f_uri + ")";
           }
         } catch(err) {
           console.error(err);
@@ -126,6 +139,34 @@
       .addEventListener("click", () => {
         inputFileUpload.click();
       });
+
+    // show protected images
+    function fetchWithAuthentication(url, authToken) {
+      const headers = new Headers();
+      headers.set('Authorization', `Basic ${authToken}`);
+      return fetch(url, { headers });
+    }
+
+    async function displayProtectedImage(imageId, imageUrl, authToken) {
+      // Fetch the image.
+      const response = await fetchWithAuthentication(
+        imageUrl, authToken
+      );
+    
+      // Create an object URL from the data.
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      console.log(objectUrl);
+    
+      // Update the source of the image.
+      const imageElement = document.getElementById(imageId);
+      imageElement.src = objectUrl;
+    }   
+    
+    const imageId = 'aaa';
+    const imageUrl = 'https://ai.e4net.net/user_uploads/8/aa/Cy491zprGoY_kUfoAQFcO5sD/22.jpg';
+    const authToken = 'MTAwMDAwMDAwMDAwMDAwMjU5N0BkZXYuY3dvcmQuY2hlcnJ5OjN3d1lEWnZKQ0hwZWhuaGlkNHNKV09UVmw3VGFaZTZw';
+    displayProtectedImage(imageId, imageUrl, authToken);      
   </script>  
   <!-- 여기서 부터 파일 업로드 끝-->
 </body>
