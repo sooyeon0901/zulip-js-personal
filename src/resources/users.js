@@ -13,7 +13,6 @@ function users(config) {
     },
     update: (params) => { // 유저 정보 업데이트
       const url = `${config.apiURL}/users/${params.user_id}`;
-      console.log('params==', params);
       return api(url, config, 'PATCH', params);
     },
     me: {
@@ -51,14 +50,11 @@ function users(config) {
           return api(url, config, 'GET', params);
         },
         add: (params) => { // 경고 단어 추가
-          console.log('파라미터1', params);
           const url = `${config.apiURL}/users/me/alert_words`;
           return api(url, config, 'POST', params);
         },
         delete: (params) => { // 경고 단어 제거
-          console.log('파라미터2', params);
           const url = `${config.apiURL}/users/me/alert_words`;
-          console.log('url22==', url);
           return api(url, config, 'DELETE', params);
         },
       },

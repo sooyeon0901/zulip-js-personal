@@ -8,13 +8,13 @@ function messages(config) {
     retrieve: (initialParams) => { // 메시지 정보 조회
       const url = `${config.apiURL}/messages`;
       const params = { ...initialParams };
+
       if (params.narrow) {
         params.narrow = JSON.stringify(params.narrow);
       }
       return api(url, config, 'GET', params);
     },
     send: async (params) => { // 스트림/private에 메시지 보내기
-      console.log('params==', params);
       const url = `${config.apiURL}/messages`;
       return api(url, config, 'POST', params);
     },
@@ -29,9 +29,7 @@ function messages(config) {
       return api(url, config, 'POST', params);
     },
     update: (params) => { // 메시지 수정
-      console.log('메시지수정params==', params);
       const url = `${config.apiURL}/messages/${params.message_id}`;
-      console.log('메시지수정url==', url);
       return api(url, config, 'PATCH', params);
     },
     flags: {
@@ -75,8 +73,6 @@ function messages(config) {
     narrow: {
       match: (params) => { // narrow 기준이 메시지와 일치하는지 확인
         const url = `${config.apiURL}/messages/matches_narrow`;
-        console.log('params==', params);
-        console.log('url==', url);
         return api(url, config, 'GET', params);
       },
     },
@@ -107,7 +103,6 @@ function messages(config) {
       },
       receipts: (params) => { // 메시지 읽음 확인
         const url = `${config.apiURL}/messages/${params.message_id}/read_receipts`;
-        console.log('url==', url);
         return api(url, config, 'GET', params);
       },
     },

@@ -6,7 +6,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0   // 추가 TLS 무시
 module.exports = 
 {
   mode: "development",
-  entry: "./browser/test_main.js",  
+  entry: "./browser/zulip_cherry_main.js",  
   output: {
     path: path.resolve(__dirname, "./browser/dist"),
     filename: "zulip.cherry.js",

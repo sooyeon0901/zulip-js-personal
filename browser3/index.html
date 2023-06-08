@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Zulip Example</title>
+<META charset="UTF-8">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<META HTTP-EQUIV="Expires" CONTENT="-1">
+  
+<!-- 파일업로드  -->
+<!-- https://7942yongdae.tistory.com/186 -->
+<script src="./dist/zulip.cherry.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" href="./dist/css/markdown.css">
+<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+
+<script type="text/javascript"> 
+    
+  let cZulip ;
+  let authHeader;
+
+  const zulip_server = "https://ai.e4net.net";
+  //let user_email = "zulip@cherrycorp.io"
+  //let user_apikey = "YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT"
+  
+  //const user_email = "test001@cherrycorp.io"
+  //const user_apikey = "8U3zR6nVk20WJ6AV4c8kd2JotM4s4xWV";
+  //let auth = window.btoa(`${user_email}:${user_apikey}`);
+  //let authHeader = `Basic ${auth}`;    
+
+  // window onload 시에 CZulip 객체 생성
+  window.onload = function() {    
+    init();
+  }
+
+  function init() {
+    rendered.innerHTML = "";
+    const acc = user_account.value.split("|");
+    const user_email = acc[0];
+    const user_apikey = acc[1];
+    // base64 만들기
+    const auth = window.btoa(`${user_email}:${user_apikey}`);
+    authHeader = `Basic ${auth}`;    
+
+    cZulip = new cw.CZulip(user_email,user_apikey,zulip_server);
+    // 기본 최근 메시지 뿌리기
+    get_messages_from_zulip();
+    // 실시간 채팅 이벤트 설정
+    get_message_realtime();
+  }
+
+  
+  async function get_stream_data() {
+    const data = await cZulip.getStreams();
+    const j = JSON.stringify(data,null,2)
+    streambox.value = j;
+  } 
+
+  // Zulip 객체 바로 사용하기
+  async function get_stream_data_from_zulip() {
+    const z = await cZulip.getZulip();
+    const data = await z.streams.subscriptions.retrieve();
+    const j = JSON.stringify(data,null,2);
+    streambox.value = j;  
+  }
+
+  // display single mesage
+  async function display_message(message) {
+    if (message) {
+      const msg = message["content"];
+      const sender = message["sender_full_name"];
+      const recipient = message["display_recipient"]; 
+      const txt = `[${recipient}]:[${sender}]:${msg}<br>`;   
+      const doc = new DOMParser().parseFromString(txt,'text/html');
+      rendered.appendChild(doc.body);
+      rendered.scrollTop = rendered.scrollHeight;
+    }    
+  }
+
+  // Zulip 메시지 가져오기
+  async function get_messages_from_zulip() {
+    const readParams = {
+      anchor: "newest",
+      num_before: 100,
+      num_after: 0,
+    };
+    const z = await cZulip.getZulip();
+    const data = await z.messages.retrieve(readParams);
+    if(data["result"] == "success") { 
+      let txt = "";
+      data["messages"].forEach((item,index,arr)=>{
+        msg = item["content"];
+        sender = item["sender_full_name"];
+        recipient = item["display_recipient"];                        
+        txt = txt + `[${recipient}]:[${sender}]:${msg}<br>`;            
+      });
+      const doc = new DOMParser().parseFromString(txt,'text/html');
+      const base = doc.createElement('base');
+      // base url 바꾸기
+      // 기본은 이 페이지를 불러오는 서버의 URL이 있는데 이를 zulip서버의 url로 바꿔 준다.
+      base.href = zulip_server;
+      doc.body.appendChild(base); 
+      //console.log("=========start============");
+      //console.log(doc.body.innerHTML);
+      //console.log("=========end============");
+      rendered.innerHTML = doc.body.innerHTML;   
+      rendered.scrollTop = rendered.scrollHeight;
+    }
+  } 
+  
+  // 실시간 메시지 이벤트 핸들러
+  async function messageHandler(event) {    
+    const j = JSON.stringify(event,null,2)
+    //streambox.value += j + "\n";     
+    console.log(j)
+    if(event["type"]==="message") {
+      message_id = event["message"]["id"];
+      const data = await get_single_message(message_id);
+      await display_message(data);
+    }
+  }
+  // 실시간 메시지
+  async function get_message_realtime() {
+    cZulip.callOnEachMessage(messageHandler);
+  }
+
+  // message id로 메시지 가져오기
+  async function get_single_message(message_id) {
+    const readParams = {
+      message_id :message_id,
+      apply_markdown: true,
+    };
+    const z = await cZulip.getZulip();
+    const data =  await z.messages.getById(readParams);
+    console.log(data)
+    if(data["result"]==="success") {
+      return data["message"];
+    }
+    return null;    
+  }
+  // 메시지 보내기
+  async function send_message() {
+    const msg = msgbox.value;
+    res = await cZulip.sendMessage("단체1-공개","테스트토픽",msg);
+    if(res["result"]==="success") {
+      msgbox.value = "";
+    }
+  }  
+</script> 
+</head>
+<body style="padding-left: 50px;">
+  <h2>Zulip Test</h2>
+  <hr style="width:800px;background:#FF0000;height:2px;"/>
+  <select id="user_account" name="user" onchange="init()" style="width:600px">
+    <option value="zulip@cherrycorp.io|YFeqVpDmkco4tXRtdnJezpObp3XZ9fJT">zulip@cherrycorp.io(관리자)</option>
+    <option value="test001@cherrycorp.io|8U3zR6nVk20WJ6AV4c8kd2JotM4s4xWV">test001@cherrycorp.io(테스트001)</option>
+  </select>
+  <hr style="width:800px;background:#FF0000;height:2px;"/>
+  <div class="rendered_markdown">
+    <div id = "rendered" style="overflow:auto; width:800px; height:400px;"></div>  
+  </div>
+  <hr style="width:800px;background:darkgray;height:1px;"/>
+  <textarea id="msgbox" type="text" style="width:800px;height:100px;font-size:14px;"></textarea><br/>
+  <input type="button" value="전송(Ctrl+Enter)" onclick="send_message();">        
+  <!-- 여기서 부터 파일 업로드 -->
+  <button id="btn-file-upload">파일 업로드</button>
+  <input
+    type="file"
+    id="upload-file"
+    style="display: none"
+    accept="image/*"
+  />
+  <script>
+    const inputFileUpload = document.querySelector("#upload-file");   
+    
+    async function fileupload(event) {
+      const formData = new FormData();
+      formData.append("filename", event.target.files[0]);
+      const response = await axios({
+        headers: {
+          "Content-Type": "multipart/form-data",
+          // 추후 이부분은 서버에서 값을 채워주는 걸로 
+          "Authorization":authHeader,
+        },
+        url: zulip_server + "/api/v1/user_uploads", // 파일 업로드 요청 URL
+        method: "POST",
+        data: formData,
+      });
+      inputFileUpload.value = "";  
+      // 화면에 결과 보여 주기
+      //rendered.innerHTML = JSON.stringify(response,null,2);
+      try {
+        if (response["data"]["result"] =="success") {
+          f_uri = response["data"]["uri"];
+          file_name = f_uri.substr(f_uri.lastIndexOf('/') + 1);
+          msgbox.value += "["+file_name+"](" + zulip_server + "/" +f_uri + ")";
+        }
+      } catch(err) {
+        console.error(err);
+      }
+    }
+    inputFileUpload.addEventListener("change", fileupload);
+
+    document
+      .querySelector("#btn-file-upload")
+      .addEventListener("click", () => {
+        inputFileUpload.click();
+      });
+
+      // message box "Ctrl+Enter" 입력시 메시지 전송
+      $('#msgbox').keydown(function (e) {
+        if (e.ctrlKey && e.keyCode == 13) {
+          send_message();
+        }
+      });
+
+  </script>  
+  <!-- 여기서 부터 파일 업로드 끝-->
+</body>
+</html>
